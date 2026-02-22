@@ -6,8 +6,8 @@ An MCP (Model Context Protocol) server for reading, writing, and rendering [Scap
 
 - **read-scapple**: Parse a .scap file into structured JSON with notes, positions, connections, and styling
 - **write-scapple**: Create a .scap file from structured note data with automatic bidirectional connection management
-- **scapple-to-image**: Render a .scap file to PNG with configurable scale and padding
 - **text-to-scapple**: Convert indented text, bullet lists, or numbered lists into Scapple diagrams with automatic layout
+- **scapple-to-image**: Render a .scap file to PNG with configurable scale and padding
 
 ## Components
 
@@ -62,17 +62,17 @@ filePath: "/path/to/output.scap"
 document: { notes: [{ x: 100, y: 100, text: "Hello" }] }
 ```
 
-**scapple-to-image** — Render to PNG:
-```
-filePath: "/path/to/diagram.scap"
-scale: 2
-```
-
 **text-to-scapple** — Convert text to diagram:
 ```
 text: "Root Topic\n  Branch A\n    Leaf 1\n  Branch B"
 filePath: "/path/to/output.scap"
 renderImage: true
+```
+
+**scapple-to-image** — Render to PNG:
+```
+filePath: "/path/to/diagram.scap"
+scale: 2
 ```
 
 ## License

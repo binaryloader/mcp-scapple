@@ -72,25 +72,6 @@ server.tool(
 );
 
 server.tool(
-  "scapple-to-image",
-  "Convert a Scapple (.scap) file to a PNG image. Renders all notes, connections, and arrows with proper styling.",
-  {
-    filePath: z.string().describe("Absolute path to the .scap file"),
-    outputPath: z.string().optional().describe("Output PNG path (default: same name with .png extension)"),
-    scale: z.number().optional().describe("Render scale factor (default: 2 for Retina)"),
-    padding: z.number().optional().describe("Canvas padding in pixels (default: 40)"),
-  },
-  async ({ filePath, outputPath, scale, padding }) => {
-    try {
-      const result = await scappleToImage(filePath, outputPath, scale, padding);
-      return { content: [{ type: "text" as const, text: result }] };
-    } catch (err) {
-      return errorResult(err);
-    }
-  }
-);
-
-server.tool(
   "text-to-scapple",
   "Convert structured text into a Scapple diagram. Accepts indented text, bullet lists, or numbered lists. Hierarchy is determined by indentation depth. Root items become cloud-shaped nodes, children become rounded nodes with arrows.",
   {
@@ -102,6 +83,25 @@ server.tool(
   async ({ text, filePath, renderImage, scale }) => {
     try {
       const result = await textToScapple(text, filePath, renderImage, scale);
+      return { content: [{ type: "text" as const, text: result }] };
+    } catch (err) {
+      return errorResult(err);
+    }
+  }
+);
+
+server.tool(
+  "scapple-to-image",
+  "Convert a Scapple (.scap) file to a PNG image. Renders all notes, connections, and arrows with proper styling.",
+  {
+    filePath: z.string().describe("Absolute path to the .scap file"),
+    outputPath: z.string().optional().describe("Output PNG path (default: same name with .png extension)"),
+    scale: z.number().optional().describe("Render scale factor (default: 2 for Retina)"),
+    padding: z.number().optional().describe("Canvas padding in pixels (default: 40)"),
+  },
+  async ({ filePath, outputPath, scale, padding }) => {
+    try {
+      const result = await scappleToImage(filePath, outputPath, scale, padding);
       return { content: [{ type: "text" as const, text: result }] };
     } catch (err) {
       return errorResult(err);
