@@ -45,17 +45,8 @@ npm run build
 
 ### 3. Configure in Claude Code
 
-Add to `~/.claude/settings.json`:
-
-```json
-{
-  "mcpServers": {
-    "scapple": {
-      "command": "node",
-      "args": ["/absolute/path/to/mcp-scapple/dist/index.js"]
-    }
-  }
-}
+```bash
+claude mcp add --transport stdio --scope user scapple -- node /absolute/path/to/mcp-scapple/dist/index.js
 ```
 
 ### 4. Tool Usage
