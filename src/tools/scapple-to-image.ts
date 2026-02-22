@@ -1,5 +1,6 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
+import type { RenderTheme } from "../types.js";
 import { parse } from "../lib/parser.js";
 import { renderToPng } from "../lib/renderer.js";
 import { ScappleIOError } from "../errors.js";
@@ -8,7 +9,8 @@ export async function scappleToImage(
   filePath: string,
   outputPath?: string,
   scale?: number,
-  padding?: number
+  padding?: number,
+  theme?: RenderTheme
 ): Promise<string> {
   const ext = path.extname(filePath).toLowerCase();
   if (ext !== ".scap") {
@@ -33,7 +35,7 @@ export async function scappleToImage(
   const doc = parse(xml);
   const outPath = outputPath ?? filePath.replace(/\.scap$/i, ".png");
 
-  const result = await renderToPng(doc, outPath, { scale, padding });
+  const result = await renderToPng(doc, outPath, { scale, padding, theme });
 
   return JSON.stringify({
     inputPath: filePath,

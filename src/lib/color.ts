@@ -25,14 +25,6 @@ export function clampColor(color: RGBColor): RGBColor {
   };
 }
 
-export function parseRGBString(value: string): RGBColor {
-  const parts = value.split(/\s+/).map(Number);
-  if (parts.length >= 3) {
-    return clampColor({ r: parts[0], g: parts[1], b: parts[2] });
-  }
-  return { r: 0, g: 0, b: 0 };
-}
-
 export function rgbToString(color: RGBColor): string {
   return `${color.r} ${color.g} ${color.b}`;
 }

@@ -1,13 +1,6 @@
-import type { RGBColor, BorderStyle } from "../../types.js";
+import type { RGBColor, BorderStyle, RenderTheme } from "../../types.js";
+import { DEFAULT_THEME } from "../../types.js";
 import { rgbToHex } from "../color.js";
-
-function escapeXml(str: string): string {
-  return str
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
-}
 
 function buildCloudPath(
   x: number,
@@ -64,20 +57,22 @@ export function renderShape(
   height: number,
   border: BorderStyle,
   fill: RGBColor | null,
-  strokeColor: string = "#cccccc"
+  theme: Required<RenderTheme> = DEFAULT_THEME
 ): string {
   const fillStr = fill ? rgbToHex(fill) : "none";
+  const { strokeColor, strokeWidth, borderRadius, shadowEnabled } = theme;
+  const filterAttr = shadowEnabled ? ` filter="url(#shadow)"` : "";
 
   switch (border) {
     case "Rounded":
-      return `<rect x="${x}" y="${y}" width="${width}" height="${height}" rx="8" ry="8" fill="${fillStr}" stroke="${strokeColor}" stroke-width="1" filter="url(#shadow)"/>`;
+      return `<rect x="${x}" y="${y}" width="${width}" height="${height}" rx="${borderRadius}" ry="${borderRadius}" fill="${fillStr}" stroke="${strokeColor}" stroke-width="${strokeWidth}"${filterAttr}/>`;
 
     case "Square":
-      return `<rect x="${x}" y="${y}" width="${width}" height="${height}" rx="0" ry="0" fill="${fillStr}" stroke="${strokeColor}" stroke-width="1" filter="url(#shadow)"/>`;
+      return `<rect x="${x}" y="${y}" width="${width}" height="${height}" rx="0" ry="0" fill="${fillStr}" stroke="${strokeColor}" stroke-width="${strokeWidth}"${filterAttr}/>`;
 
     case "Cloud": {
       const path = buildCloudPath(x, y, width, height);
-      return `<path d="${path}" fill="${fillStr}" stroke="${strokeColor}" stroke-width="1" filter="url(#shadow)"/>`;
+      return `<path d="${path}" fill="${fillStr}" stroke="${strokeColor}" stroke-width="${strokeWidth}"${filterAttr}/>`;
     }
 
     case "None":

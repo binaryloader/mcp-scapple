@@ -20,26 +20,48 @@ const xmlBuilder = new XMLBuilder({
   suppressEmptyNode: true,
 });
 
-function buildAppearanceXml(appearance: NoteAppearance): Record<string, string> {
-  const ap: Record<string, string> = {};
-  ap["Alignment"] = appearance.alignment;
-  if (appearance.border !== "None") {
-    ap["Border"] = appearance.border;
+function buildAppearanceXml(appearance: NoteAppearance): Record<string, unknown> {
+  const ap: Record<string, unknown> = {};
+
+  if (appearance.alignment) {
+    ap["Alignment"] = appearance.alignment;
   }
+
+  if (appearance.border && appearance.border !== "None") {
+    if (appearance.borderColor || appearance.borderWeight) {
+      const borderObj: Record<string, unknown> = {};
+      if (appearance.borderWeight) {
+        borderObj["@_Weight"] = String(appearance.borderWeight);
+      }
+      borderObj["@_Style"] = appearance.border;
+      if (appearance.borderColor) {
+        borderObj["#text"] = rgbToString(appearance.borderColor);
+      }
+      ap["Border"] = borderObj;
+    } else {
+      ap["Border"] = appearance.border;
+    }
+  }
+
   if (appearance.fill) {
     ap["Fill"] = rgbToString(appearance.fill);
   }
-  ap["TextColor"] = rgbToString(appearance.textColor);
-  if (appearance.fontName !== "Helvetica") {
+
+  if (appearance.textColor) {
+    ap["TextColor"] = rgbToString(appearance.textColor);
+  }
+
+  if (appearance.fontName && appearance.fontName !== "Helvetica") {
     ap["FontName"] = appearance.fontName;
   }
+
   return ap;
 }
 
 function buildNoteXml(note: ScappleNote): Record<string, unknown> {
   const result: Record<string, unknown> = {
     "@_ID": String(note.id),
-    "@_FontSize": String(note.appearance.fontSize),
+    "@_FontSize": String(note.appearance.fontSize ?? 12),
     "@_Position": `${note.x},${note.y}`,
     "@_Width": String(note.width),
     "String": note.text,
@@ -56,14 +78,6 @@ function buildNoteXml(note: ScappleNote): Record<string, unknown> {
   return result;
 }
 
-function resolveColor(
-  hex: string | undefined,
-  fallback: RGBColor
-): RGBColor {
-  if (!hex) return fallback;
-  return hexToRgb(hex);
-}
-
 function buildNoteFromInput(
   input: NoteInput,
   id: number
@@ -71,7 +85,7 @@ function buildNoteFromInput(
   const fill = input.fill ? hexToRgb(input.fill) : null;
   const textColor = input.textColor
     ? hexToRgb(input.textColor)
-    : { r: 0, g: 0, b: 0 };
+    : null;
 
   return {
     id: input.id ?? id,
@@ -83,10 +97,14 @@ function buildNoteFromInput(
     appearance: {
       alignment: input.alignment ?? "Center",
       border: input.border ?? "Rounded",
+      borderColor: null,
+      borderWeight: null,
       fill,
       textColor,
       fontSize: input.fontSize ?? 12,
       fontName: input.fontName ?? "Helvetica",
+      isBold: false,
+      isItalic: false,
     },
     connectedNoteIDs: input.connectedNoteIDs ? [...input.connectedNoteIDs] : [],
     pointsToNoteIDs: input.pointsToNoteIDs ? [...input.pointsToNoteIDs] : [],
@@ -141,9 +159,13 @@ export function buildDocument(input: DocumentInput): ScappleDocument {
 
   return {
     notes,
+    backgroundShapes: [],
+    noteStyles: [],
     settings: {
       backgroundColor: bgColor,
       textColor: { r: 0, g: 0, b: 0 },
+      defaultFont: "Helvetica",
+      noteXPadding: 8,
     },
   };
 }

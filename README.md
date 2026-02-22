@@ -4,10 +4,75 @@ An MCP (Model Context Protocol) server for reading, writing, and rendering [Scap
 
 ## Features
 
-- **read-scapple**: Parse a .scap file into structured JSON with notes, positions, connections, and styling
+- **read-scapple**: Parse a .scap file into structured JSON with notes, background shapes, note styles, and connections
 - **write-scapple**: Create a .scap file from structured note data with automatic bidirectional connection management
-- **text-to-scapple**: Convert indented text, bullet lists, or numbered lists into Scapple diagrams with automatic layout
-- **scapple-to-image**: Render a .scap file to PNG with configurable scale and padding
+- **text-to-scapple**: Convert indented text, bullet lists, or numbered lists into Scapple diagrams with automatic layout and optional themed rendering
+- **scapple-to-image**: Render a .scap file to PNG with full theme support (background, colors, fonts, shadows, patterns)
+
+## Examples
+
+You can use natural language to create and render diagrams:
+
+> "Make a brainstorm diagram about mobile app development with branches for design, backend, and testing"
+
+![Default theme](examples/example-default.png)
+
+> "Render that diagram with a dark theme — navy background, dot pattern, no shadows"
+
+![Dark theme](examples/example-dark.png)
+
+### Theme Options
+
+The `scapple-to-image` and `text-to-scapple` tools accept an optional `theme` parameter with the following properties. All properties are optional — when omitted, values from the `.scap` file's settings are used first, then the defaults below.
+
+#### Canvas
+
+| Property | Type | Default | Description |
+|---|---|---|---|
+| `backgroundColor` | string | `#ffffff` | Canvas background color (hex) |
+| `backgroundPattern` | string | `none` | Pattern type: `none`, `dots`, `grid`, `lines` |
+| `patternColor` | string | `#cccccc` | Pattern color (hex) |
+
+#### Notes
+
+| Property | Type | Default | Description |
+|---|---|---|---|
+| `strokeColor` | string | `#cccccc` | Note border color (hex) |
+| `strokeWidth` | number | `1` | Note border width |
+| `borderRadius` | number | `8` | Rounded note corner radius |
+| `shadowColor` | string | `#00000033` | Shadow color (hex with alpha) |
+| `shadowEnabled` | boolean | `true` | Enable/disable shadow |
+| `defaultFill` | string | `none` | Default note fill color (hex) |
+| `defaultBorder` | string | `None` | Default border style: `Rounded`, `Square`, `Cloud`, `None` |
+
+#### Text
+
+| Property | Type | Default | Description |
+|---|---|---|---|
+| `defaultFont` | string | `Helvetica` | Default font family |
+| `defaultFontSize` | number | `12` | Default font size |
+| `defaultTextColor` | string | `#000000` | Default text color (hex) |
+| `defaultAlignment` | string | `Center` | Default text alignment: `Left`, `Center`, `Right` |
+| `noteXPadding` | number | `8` | Horizontal padding inside notes |
+
+#### Connections
+
+| Property | Type | Default | Description |
+|---|---|---|---|
+| `lineColor` | string | `#666666` | Connection line color (hex) |
+| `lineWidth` | number | `1` | Connection line width |
+| `arrowColor` | string | `#666666` | Arrow color (hex) |
+
+### Scapple File Settings
+
+When rendering a `.scap` file, the following settings are read from the file and used as theme defaults (overridden by explicit `theme` parameters):
+
+- `BackgroundColor` → `backgroundColor`
+- `DefaultTextColor` → `defaultTextColor`
+- `DefaultFont` (UISettings) → `defaultFont`
+- `NoteXPadding` (UISettings) → `noteXPadding`
+
+Per-note appearance settings (border color, weight, text color, fill, font, bold/italic) always take precedence over theme defaults.
 
 ## Components
 
@@ -20,9 +85,9 @@ An MCP (Model Context Protocol) server for reading, writing, and rendering [Scap
 | `src/lib/builder.ts` | ScappleDocument to .scap XML builder |
 | `src/lib/renderer.ts` | SVG/PNG rendering pipeline |
 | `src/lib/layout.ts` | Text-to-diagram automatic layout |
-| `src/lib/svg/` | SVG generation modules (shapes, connections, text) |
+| `src/lib/svg/` | SVG generation modules (shapes, connections, text, defs) |
 | `src/tools/` | MCP tool handlers |
-| `examples/` | Example .scap files |
+| `examples/` | Example .scap files and rendered samples |
 
 ## Requirements
 
@@ -73,6 +138,7 @@ renderImage: true
 ```
 filePath: "/path/to/diagram.scap"
 scale: 2
+theme: { backgroundColor: "#1a1a2e", backgroundPattern: "dots", shadowEnabled: false }
 ```
 
 ## License

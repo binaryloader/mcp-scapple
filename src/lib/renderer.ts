@@ -1,11 +1,12 @@
 import sharp from "sharp";
-import type { ScappleDocument } from "../types.js";
+import type { ScappleDocument, RenderTheme } from "../types.js";
 import { ScappleRenderError } from "../errors.js";
 import { buildSvg } from "./svg/index.js";
 
 export interface RenderOptions {
   readonly scale?: number;
   readonly padding?: number;
+  readonly theme?: RenderTheme;
 }
 
 export interface RenderResult {
@@ -16,10 +17,11 @@ export interface RenderResult {
 
 export async function renderToSvg(
   doc: ScappleDocument,
-  padding?: number
+  padding?: number,
+  theme?: RenderTheme
 ): Promise<string> {
   try {
-    return buildSvg(doc, padding);
+    return buildSvg(doc, padding, theme);
   } catch (err) {
     throw new ScappleRenderError(
       `Failed to generate SVG: ${err instanceof Error ? err.message : String(err)}`,
@@ -36,7 +38,7 @@ export async function renderToPng(
   const scale = options.scale ?? 2;
   const padding = options.padding ?? 40;
 
-  const svg = await renderToSvg(doc, padding);
+  const svg = await renderToSvg(doc, padding, options.theme);
   const svgBuffer = Buffer.from(svg, "utf-8");
 
   try {

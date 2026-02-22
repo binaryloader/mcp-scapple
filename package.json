@@ -4,6 +4,9 @@
   "description": "MCP server for reading, writing, and rendering Scapple (.scap) files",
   "type": "module",
   "main": "dist/index.js",
+  "bin": {
+    "mcp-scapple": "dist/index.js"
+  },
   "scripts": {
     "build": "tsc",
     "start": "node dist/index.js"

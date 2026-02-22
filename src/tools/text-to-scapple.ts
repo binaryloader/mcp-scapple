@@ -1,5 +1,6 @@
 import { writeFile, mkdir } from "node:fs/promises";
 import path from "node:path";
+import type { RenderTheme } from "../types.js";
 import { textToNotes } from "../lib/layout.js";
 import { buildDocument, build } from "../lib/builder.js";
 import { renderToPng } from "../lib/renderer.js";
@@ -9,7 +10,8 @@ export async function textToScapple(
   text: string,
   filePath: string,
   renderImage?: boolean,
-  scale?: number
+  scale?: number,
+  theme?: RenderTheme
 ): Promise<string> {
   const ext = path.extname(filePath).toLowerCase();
   if (ext !== ".scap") {
@@ -53,7 +55,7 @@ export async function textToScapple(
 
   if (renderImage) {
     const imagePath = filePath.replace(/\.scap$/i, ".png");
-    const renderResult = await renderToPng(doc, imagePath, { scale });
+    const renderResult = await renderToPng(doc, imagePath, { scale, theme });
     result.imagePath = renderResult.outputPath;
     result.imageWidth = renderResult.width;
     result.imageHeight = renderResult.height;

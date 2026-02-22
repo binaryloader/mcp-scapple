@@ -1,4 +1,5 @@
-import type { ScappleNote, Point } from "../../types.js";
+import type { ScappleNote, Point, RenderTheme } from "../../types.js";
+import { DEFAULT_THEME } from "../../types.js";
 import { centerOf, lineRectIntersection, noteToRect } from "../geometry.js";
 
 interface ConnectionLine {
@@ -34,28 +35,24 @@ export function computeConnections(notes: readonly ScappleNote[]): ConnectionLin
       const hasArrow = pointsToSet.has(connId);
 
       const from = lineRectIntersection(toCenter, fromCenter, noteToRect(note));
-      const to = hasArrow
-        ? lineRectIntersection(fromCenter, toCenter, noteToRect(target))
-        : toCenter;
+      const to = lineRectIntersection(fromCenter, toCenter, noteToRect(target));
 
-      lines.push({
-        from,
-        to: hasArrow
-          ? lineRectIntersection(fromCenter, toCenter, noteToRect(target))
-          : lineRectIntersection(fromCenter, toCenter, noteToRect(target)),
-        hasArrow,
-      });
+      lines.push({ from, to, hasArrow });
     }
   }
 
   return lines;
 }
 
-export function renderConnections(lines: readonly ConnectionLine[]): string {
+export function renderConnections(
+  lines: readonly ConnectionLine[],
+  theme: Required<RenderTheme> = DEFAULT_THEME
+): string {
+  const { lineColor, lineWidth } = theme;
   return lines
     .map((line) => {
       const marker = line.hasArrow ? ` marker-end="url(#arrowhead)"` : "";
-      return `<line x1="${line.from.x}" y1="${line.from.y}" x2="${line.to.x}" y2="${line.to.y}" stroke="#666666" stroke-width="1"${marker}/>`;
+      return `<line x1="${line.from.x}" y1="${line.from.y}" x2="${line.to.x}" y2="${line.to.y}" stroke="${lineColor}" stroke-width="${lineWidth}"${marker}/>`;
     })
     .join("\n  ");
 }

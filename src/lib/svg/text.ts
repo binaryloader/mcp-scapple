@@ -25,13 +25,14 @@ function alignmentToAnchor(alignment: TextAlignment): string {
 function alignmentToX(
   alignment: TextAlignment,
   x: number,
-  width: number
+  width: number,
+  xPadding: number
 ): number {
   switch (alignment) {
     case "Left":
-      return x + 8;
+      return x + xPadding;
     case "Right":
-      return x + width - 8;
+      return x + width - xPadding;
     case "Center":
       return x + width / 2;
   }
@@ -46,14 +47,17 @@ export function renderText(
   fontSize: number,
   fontName: string,
   alignment: TextAlignment,
-  textColor: RGBColor
+  textColor: RGBColor,
+  noteXPadding: number = 8,
+  isBold: boolean = false,
+  isItalic: boolean = false
 ): string {
-  const padding = 16;
+  const padding = noteXPadding * 2;
   const maxTextWidth = width - padding;
   const lines = wrapText(text, maxTextWidth, fontSize);
   const lineHeight = getLineHeight(fontSize);
   const totalTextHeight = lines.length * lineHeight;
-  const textX = alignmentToX(alignment, x, width);
+  const textX = alignmentToX(alignment, x, width, noteXPadding);
   const textY = y + (height - totalTextHeight) / 2 + fontSize;
 
   const anchor = alignmentToAnchor(alignment);
@@ -66,5 +70,8 @@ export function renderText(
     )
     .join("");
 
-  return `<text x="${textX}" y="${textY}" font-family="${escapeXml(fontName)}" font-size="${fontSize}" fill="${color}" text-anchor="${anchor}">${tspans}</text>`;
+  const weightAttr = isBold ? ` font-weight="bold"` : "";
+  const styleAttr = isItalic ? ` font-style="italic"` : "";
+
+  return `<text x="${textX}" y="${textY}" font-family="${escapeXml(fontName)}" font-size="${fontSize}" fill="${color}" text-anchor="${anchor}"${weightAttr}${styleAttr}>${tspans}</text>`;
 }

@@ -6,6 +6,8 @@ import type {
   RGBColor,
   BorderStyle,
   TextAlignment,
+  BackgroundShape,
+  NoteStyle,
 } from "../types.js";
 import { ScappleParseError, ScappleValidationError } from "../errors.js";
 import { parseIdRange } from "./id-range.js";
@@ -15,7 +17,7 @@ const xmlParser = new XMLParser({
   ignoreAttributes: false,
   attributeNamePrefix: "@_",
   textNodeName: "#text",
-  isArray: (tagName) => tagName === "Note",
+  isArray: (tagName) => tagName === "Note" || tagName === "Shape" || tagName === "Style",
   parseTagValue: false,
   trimValues: false,
 });
@@ -38,29 +40,48 @@ function parseColor(value: unknown): RGBColor | null {
   return clampColor({ r: parts[0], g: parts[1], b: parts[2] });
 }
 
-function parseBorderStyle(value: unknown): BorderStyle {
+function parseBorderStyle(value: unknown): BorderStyle | null {
   const str = String(value ?? "");
   if (str === "Square" || str === "Rounded" || str === "Cloud") return str;
-  return "None";
+  if (str === "None") return "None";
+  return null;
 }
 
-function parseAlignment(value: unknown): TextAlignment {
-  const str = String(value ?? "Center");
-  if (str === "Left" || str === "Right") return str;
-  return "Center";
+function parseAlignment(value: unknown): TextAlignment | null {
+  const str = String(value ?? "");
+  if (str === "Left" || str === "Right" || str === "Center") return str;
+  return null;
 }
 
 function extractAppearance(note: Record<string, unknown>): NoteAppearance {
   const appearance = note["Appearance"] as Record<string, unknown> | undefined;
   const ap = appearance ?? {};
 
+  let border: BorderStyle | null = null;
+  let borderColor: RGBColor | null = null;
+  let borderWeight: number | null = null;
+
+  const borderRaw = ap["Border"];
+  if (typeof borderRaw === "object" && borderRaw !== null) {
+    const obj = borderRaw as Record<string, unknown>;
+    border = parseBorderStyle(obj["@_Style"]) ?? "Rounded";
+    borderWeight = obj["@_Weight"] !== undefined ? parseFloat0(obj["@_Weight"]) : null;
+    borderColor = parseColor(obj["#text"]);
+  } else if (typeof borderRaw === "string") {
+    border = parseBorderStyle(borderRaw);
+  }
+
   return {
     alignment: parseAlignment(ap["Alignment"]),
-    border: parseBorderStyle(ap["Border"]),
+    border,
+    borderColor,
+    borderWeight,
     fill: parseColor(ap["Fill"]),
-    textColor: parseColor(ap["TextColor"]) ?? { r: 0, g: 0, b: 0 },
-    fontSize: parseFloat0(ap["FontSize"] ?? 12),
-    fontName: String(ap["FontName"] ?? "Helvetica"),
+    textColor: parseColor(ap["TextColor"]),
+    fontSize: ap["FontSize"] !== undefined ? parseFloat0(ap["FontSize"]) : null,
+    fontName: ap["FontName"] !== undefined ? String(ap["FontName"]) : null,
+    isBold: String(ap["IsBold"] ?? "No") === "Yes",
+    isItalic: String(ap["IsItalic"] ?? "No") === "Yes",
   };
 }
 
@@ -104,6 +125,54 @@ function parseNote(raw: Record<string, unknown>): ScappleNote {
     appearance: { ...appearance, fontSize },
     connectedNoteIDs: parseIdRange(connectedStr),
     pointsToNoteIDs: parseIdRange(pointsToStr),
+  };
+}
+
+function parseBackgroundShape(raw: Record<string, unknown>): BackgroundShape {
+  const id = parseInt0(raw["@_ID"]);
+  const positionStr = String(raw["@_Position"] ?? "0,0");
+  const width = parseFloat0(raw["@_Width"] ?? 100);
+  const height = parseFloat0(raw["@_Height"] ?? 100);
+
+  const posParts = positionStr.split(",").map((s) => parseFloat(s.trim()));
+  if (posParts.length < 2 || posParts.some(isNaN)) {
+    throw new ScappleParseError(
+      `Invalid BackgroundShape Position: "${positionStr}"`,
+      "PARSE_INVALID_FORMAT",
+      { shapeId: id, position: positionStr }
+    );
+  }
+
+  const appearance = raw["Appearance"] as Record<string, unknown> | undefined;
+  const ap = appearance ?? {};
+  const borderRaw = ap["Border"];
+
+  let border: BorderStyle = "Rounded";
+  let borderColor: RGBColor | null = null;
+  let borderWeight = 1;
+  let fill: RGBColor | null = null;
+
+  if (typeof borderRaw === "object" && borderRaw !== null) {
+    const obj = borderRaw as Record<string, unknown>;
+    border = parseBorderStyle(obj["@_Style"]) ?? "Rounded";
+    borderWeight = obj["@_Weight"] !== undefined ? parseFloat0(obj["@_Weight"]) : 1;
+    borderColor = parseColor(obj["#text"]);
+  } else if (typeof borderRaw === "string") {
+    borderColor = parseColor(borderRaw);
+  }
+
+  fill = parseColor(ap["Fill"]);
+
+  return {
+    id,
+    x: posParts[0],
+    y: posParts[1],
+    width,
+    height,
+    border,
+    borderColor,
+    borderWeight,
+    fill,
   };
 }
 
@@ -161,19 +230,53 @@ export function parse(xml: string): ScappleDocument {
     }
   }
 
+  const stylesWrapper = scapple["NoteStyles"] as Record<string, unknown> | undefined;
+  const rawStyles = (stylesWrapper?.["Style"] ?? []) as Record<string, unknown>[];
+  const noteStyles: NoteStyle[] = rawStyles.map((raw) => ({
+    name: String(raw["@_Name"] ?? ""),
+    id: String(raw["@_ID"] ?? ""),
+    borderThickness: raw["BorderThickness"] !== undefined ? parseFloat0(raw["BorderThickness"]) : undefined,
+    borderColor: raw["BorderColor"] !== undefined ? parseColor(raw["BorderColor"]) ?? undefined : undefined,
+    fillColor: raw["FillColor"] !== undefined ? parseColor(raw["FillColor"]) ?? undefined : undefined,
+    textColor: raw["TextColor"] !== undefined ? parseColor(raw["TextColor"]) ?? undefined : undefined,
+    fontSize: raw["FontSize"] !== undefined ? parseFloat0(raw["FontSize"]) : undefined,
+    isBold: String(raw["IsBold"] ?? "") === "Yes" ? true : undefined,
+    isItalic: String(raw["IsItalic"] ?? "") === "Yes" ? true : undefined,
+  }));
+
+  const bgShapesWrapper = scapple["BackgroundShapes"] as Record<string, unknown> | undefined;
+  const rawShapes = (bgShapesWrapper?.["Shape"] ?? []) as Record<string, unknown>[];
+  const backgroundShapes = rawShapes.map(parseBackgroundShape);
+
+  const uiSettings = scapple["UISettings"] as Record<string, unknown> | undefined;
+  const ui = uiSettings ?? {};
+
   const bgColor = parseColor(
-    (scapple["BackgroundColor"] as string) ?? undefined
+    (scapple["BackgroundColor"] as string) ??
+    (ui["BackgroundColor"] as string) ?? undefined
   ) ?? { r: 1, g: 1, b: 1 };
 
   const textColor = parseColor(
     (scapple["DefaultTextColor"] as string) ?? undefined
   ) ?? { r: 0, g: 0, b: 0 };
 
+  const defaultFont = ui["DefaultFont"] !== undefined
+    ? String(ui["DefaultFont"])
+    : "Helvetica";
+
+  const noteXPadding = ui["NoteXPadding"] !== undefined
+    ? parseFloat0(ui["NoteXPadding"])
+    : 8;
+
   return {
     notes,
+    backgroundShapes,
+    noteStyles,
     settings: {
       backgroundColor: bgColor,
       textColor,
+      defaultFont,
+      noteXPadding,
     },
   };
 }

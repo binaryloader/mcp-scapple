@@ -9,6 +9,27 @@ import { scappleToImage } from "./tools/scapple-to-image.js";
 import { textToScapple } from "./tools/text-to-scapple.js";
 import { ScappleError } from "./errors.js";
 
+const themeSchema = z.object({
+  backgroundColor: z.string().optional().describe("Canvas background color (hex)"),
+  backgroundPattern: z.enum(["none", "dots", "grid", "lines"]).optional().describe("Background pattern type"),
+  patternColor: z.string().optional().describe("Pattern color (hex)"),
+  strokeColor: z.string().optional().describe("Note border color (hex)"),
+  strokeWidth: z.number().optional().describe("Note border width"),
+  lineColor: z.string().optional().describe("Connection line color (hex)"),
+  lineWidth: z.number().optional().describe("Connection line width"),
+  arrowColor: z.string().optional().describe("Arrow color (hex)"),
+  shadowColor: z.string().optional().describe("Shadow color (hex with alpha)"),
+  shadowEnabled: z.boolean().optional().describe("Enable/disable shadow"),
+  borderRadius: z.number().optional().describe("Rounded note corner radius"),
+  defaultFont: z.string().optional().describe("Default font family"),
+  defaultFontSize: z.number().optional().describe("Default font size"),
+  defaultTextColor: z.string().optional().describe("Default text color (hex)"),
+  defaultFill: z.string().optional().describe("Default note fill color (hex, or 'none')"),
+  defaultBorder: z.enum(["Rounded", "Square", "Cloud", "None"]).optional().describe("Default note border style"),
+  defaultAlignment: z.enum(["Left", "Center", "Right"]).optional().describe("Default text alignment"),
+  noteXPadding: z.number().optional().describe("Horizontal padding inside notes"),
+}).optional().describe("Rendering theme options");
+
 const server = new McpServer({
   name: "mcp-scapple",
   version: "1.0.0",
@@ -79,10 +100,11 @@ server.tool(
     filePath: z.string().describe("Absolute path for the output .scap file"),
     renderImage: z.boolean().optional().describe("Also render a PNG image (default: false)"),
     scale: z.number().optional().describe("Image scale factor if rendering (default: 2)"),
+    theme: themeSchema,
   },
-  async ({ text, filePath, renderImage, scale }) => {
+  async ({ text, filePath, renderImage, scale, theme }) => {
     try {
-      const result = await textToScapple(text, filePath, renderImage, scale);
+      const result = await textToScapple(text, filePath, renderImage, scale, theme);
       return { content: [{ type: "text" as const, text: result }] };
     } catch (err) {
       return errorResult(err);
@@ -98,10 +120,11 @@ server.tool(
     outputPath: z.string().optional().describe("Output PNG path (default: same name with .png extension)"),
     scale: z.number().optional().describe("Render scale factor (default: 2 for Retina)"),
     padding: z.number().optional().describe("Canvas padding in pixels (default: 40)"),
+    theme: themeSchema,
   },
-  async ({ filePath, outputPath, scale, padding }) => {
+  async ({ filePath, outputPath, scale, padding, theme }) => {
     try {
-      const result = await scappleToImage(filePath, outputPath, scale, padding);
+      const result = await scappleToImage(filePath, outputPath, scale, padding, theme);
       return { content: [{ type: "text" as const, text: result }] };
     } catch (err) {
       return errorResult(err);
