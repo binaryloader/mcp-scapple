@@ -96,22 +96,10 @@ Per-note appearance settings (border color, weight, text color, fill, font, bold
 
 ## Usage
 
-### 1. Install Dependencies
+### Configure in Claude Code
 
 ```bash
-npm install
-```
-
-### 2. Build
-
-```bash
-npm run build
-```
-
-### 3. Configure in Claude Code
-
-```bash
-claude mcp add --transport stdio --scope user scapple -- node /absolute/path/to/mcp-scapple/dist/index.js
+claude mcp add --transport stdio --scope user scapple -- npx -y @binaryloader/mcp-scapple
 ```
 
 ### 4. Tool Usage
