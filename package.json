@@ -33,6 +33,9 @@
   },
   "author": "BinaryLoader",
   "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.12.1",
     "fast-xml-parser": "^5.2.3",
