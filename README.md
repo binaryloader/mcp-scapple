@@ -1,5 +1,7 @@
 # mcp-scapple
 
+[![npm version](https://img.shields.io/npm/v/@binaryloader/mcp-scapple)](https://www.npmjs.com/package/@binaryloader/mcp-scapple)
+
 An MCP (Model Context Protocol) server for reading, writing, and rendering [Scapple](https://www.literatureandlatte.com/scapple/overview) (.scap) files. Scapple is a brainstorming tool by Literature & Latte that stores diagrams as XML. This server enables AI assistants to work with Scapple files directly.
 
 ## Features
@@ -87,7 +89,7 @@ Per-note appearance settings (border color, weight, text color, fill, font, bold
 | `src/lib/layout.ts` | Text-to-diagram automatic layout |
 | `src/lib/svg/` | SVG generation modules (shapes, connections, text, defs) |
 | `src/tools/` | MCP tool handlers |
-| `examples/` | Example .scap files and rendered samples |
+| `examples/` | Rendered samples |
 
 ## Requirements
 
