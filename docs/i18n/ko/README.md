@@ -27,7 +27,7 @@
 
 ### Theme Options
 
-`scapple-to-image`와 `text-to-scapple` 도구는 선택 파라미터 `theme`을 받으며 다음 속성을 지원한다. 모든 속성은 선택 사항이다. 생략하면 `.scap` 파일의 설정 값을 먼저 사용하고, 그래도 없으면 아래 기본값을 사용한다.
+`scapple-to-image`와 `text-to-scapple` 도구는 선택 파라미터 `theme`을 받으며 다음 속성을 지원한다. 모든 속성은 선택 사항이다. 생략하면 `.scap` 파일의 설정 값을 먼저 사용하고 그래도 없으면 아래 기본값을 사용한다.
 
 #### Canvas
 
