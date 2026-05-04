@@ -1,3 +1,5 @@
+**English** | [한국어](docs/i18n/ko/README.md) | [日本語](docs/i18n/ja/README.md)
+
 # mcp-scapple
 
 [![npm version](https://img.shields.io/npm/v/@binaryloader/mcp-scapple)](https://www.npmjs.com/package/@binaryloader/mcp-scapple)
@@ -19,13 +21,13 @@ You can use natural language to create and render diagrams:
 
 ![Default theme](examples/example-default.png)
 
-> "Render that diagram with a dark theme — navy background, dot pattern, no shadows"
+> "Render that diagram with a dark theme - navy background, dot pattern, no shadows"
 
 ![Dark theme](examples/example-dark.png)
 
 ### Theme Options
 
-The `scapple-to-image` and `text-to-scapple` tools accept an optional `theme` parameter with the following properties. All properties are optional — when omitted, values from the `.scap` file's settings are used first, then the defaults below.
+The `scapple-to-image` and `text-to-scapple` tools accept an optional `theme` parameter with the following properties. All properties are optional - when omitted, values from the `.scap` file's settings are used first, then the defaults below.
 
 #### Canvas
 
@@ -104,27 +106,27 @@ Per-note appearance settings (border color, weight, text color, fill, font, bold
 claude mcp add --transport stdio --scope user scapple -- npx -y @binaryloader/mcp-scapple
 ```
 
-### 4. Tool Usage
+### Tool Usage
 
-**read-scapple** — Read a Scapple file:
+**read-scapple** - Read a Scapple file:
 ```
 filePath: "/path/to/diagram.scap"
 ```
 
-**write-scapple** — Create a Scapple file:
+**write-scapple** - Create a Scapple file:
 ```
 filePath: "/path/to/output.scap"
 document: { notes: [{ x: 100, y: 100, text: "Hello" }] }
 ```
 
-**text-to-scapple** — Convert text to diagram:
+**text-to-scapple** - Convert text to diagram:
 ```
 text: "Root Topic\n  Branch A\n    Leaf 1\n  Branch B"
 filePath: "/path/to/output.scap"
 renderImage: true
 ```
 
-**scapple-to-image** — Render to PNG:
+**scapple-to-image** - Render to PNG:
 ```
 filePath: "/path/to/diagram.scap"
 scale: 2
